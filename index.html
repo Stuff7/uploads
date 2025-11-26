@@ -4,9 +4,7 @@
     <meta charset="utf-8">
     <title>Upload</title>
     <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       background-color: #121212;
       color: #e0e0e0;
@@ -22,8 +20,9 @@
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      width: 400px;
     }
-    input[type="file"], input[type="submit"] {
+    input[type="file"], input[type="submit"], textarea {
       display: block;
       margin: 1rem auto;
       background-color: #333;
@@ -34,8 +33,11 @@
       cursor: pointer;
       width: 100%;
     }
-    input[type="submit"]:hover {
-      background-color: #555;
+    input[type="submit"]:hover { background-color: #555; }
+    textarea {
+      height: 150px;
+      resize: vertical;
+      padding: 0.5rem;
     }
     #spinner {
       display: none;
@@ -59,8 +61,9 @@
   </head>
   <body>
     <form id="uploadForm" enctype="multipart/form-data" action="/upload" method="post">
-      <h2 style="text-align:center;">Upload a File</h2>
-      <input type="file" name="file" required />
+      <h2 style="text-align:center;">Upload a File or Paste Text</h2>
+      <input type="file" name="file" />
+      <textarea name="pastedText" placeholder="Paste your text here..."></textarea>
       <input type="submit" value="Upload" />
       <div id="spinner">
         <div class="spinner"></div>
@@ -75,3 +78,4 @@
     </script>
   </body>
 </html>
+

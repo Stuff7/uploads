@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 var portStr string
@@ -58,24 +59,36 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, handler, err := r.FormFile("file")
-	if err != nil {
-		http.Error(w, "Error reading file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
 	os.MkdirAll(uploadDir, 0755)
-	dst, err := os.Create(filepath.Join(uploadDir, filepath.Base(handler.Filename)))
-	if err != nil {
-		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
 
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, "Error writing file", http.StatusInternalServerError)
-		return
+	// First, check if a file was uploaded
+	file, handler, err := r.FormFile("file")
+	if err == nil {
+		defer file.Close()
+		dst, err := os.Create(filepath.Join(uploadDir, filepath.Base(handler.Filename)))
+		if err != nil {
+			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, "Error writing file", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// If no file, check for pasted text
+		pasted := r.FormValue("pastedText")
+		if pasted == "" {
+			http.Error(w, "No file or text provided", http.StatusBadRequest)
+			return
+		}
+
+		filename := filepath.Join(uploadDir, fmt.Sprintf("pasted_%d.txt", time.Now().UnixNano()))
+		if err := os.WriteFile(filename, []byte(pasted), 0644); err != nil {
+			http.Error(w, "Error saving text", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "text/html")
